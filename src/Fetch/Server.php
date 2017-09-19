@@ -116,7 +116,7 @@ class Server
 	 */
 	protected $service = 'imap';
 
-	protected $mimeHeaderDecodeFunction = 'imap_utf8';
+	protected $mimeHeaderDecodeFunction = null;
 
 	/**
 	 * This constructor takes the location and service thats trying to be connected to as its arguments.
@@ -143,14 +143,14 @@ class Server
 		}
 
 		$this->service = $service;
-
+		$this->mimeHeaderDecodeFunction = imap_utf8;
 		if(function_exists('iconv_mime_decode'))
 		{
-			$this->mimeHeaderDecodeFunction = 'iconv_mime_decode';
+			$this->mimeHeaderDecodeFunction = iconv_mime_decode;
 		}
 		elseif(function_exists('mb_decode_mimeheader'))
 		{
-			$this->mimeHeaderDecodeFunction = 'mb_decode_mimeheader';
+			$this->mimeHeaderDecodeFunction = mb_decode_mimeheader;
 		}
 
 	}
@@ -208,30 +208,46 @@ class Server
 	public function setFlag($flag, $value = null)
 	{
 		if (!self::$sslEnable && in_array($flag, self::$sslFlags))
+		{
 			return;
+		}
 
-		if (isset(self::$exclusiveFlags[$flag])) {
+		if (isset(self::$exclusiveFlags[$flag]))
+		{
 			$kill = self::$exclusiveFlags[$flag];
-		} elseif ($index = array_search($flag, self::$exclusiveFlags)) {
+		}
+		elseif ($index = array_search($flag, self::$exclusiveFlags))
+		{
 			$kill = $index;
 		}
 
 		if (isset($kill) && false !== $index = array_search($kill, $this->flags))
+		{
 			unset($this->flags[$index]);
+		}
 
 		$index = array_search($flag, $this->flags);
-		if (isset($value) && $value !== true) {
-			if ($value == false && $index !== false) {
+		if (isset($value) && $value !== true)
+		{
+			if ($value == false && $index !== false)
+			{
 				unset($this->flags[$index]);
-			} elseif ($value != false) {
+			}
+			elseif ($value != false)
+			{
 				$match = preg_grep('/' . $flag . '/', $this->flags);
-				if (reset($match)) {
+				if (reset($match))
+				{
 					$this->flags[key($match)] = $flag . '=' . $value;
-				} else {
+				}
+				else
+				{
 					$this->flags[] = $flag . '=' . $value;
 				}
 			}
-		} elseif ($index === false) {
+		}
+		elseif ($index === false)
+		{
 			$this->flags[] = $flag;
 		}
 	}
@@ -245,7 +261,9 @@ class Server
 	public function setOptions($bitmask = 0)
 	{
 		if (!is_numeric($bitmask))
+		{
 			throw new \RuntimeException('Function requires numeric argument.');
+		}
 
 		$this->options = $bitmask;
 	}
@@ -356,17 +374,24 @@ class Server
 	 */
 	public function search($criteria = 'ALL', $limit = null)
 	{
-		if ($results = imap_search($this->getImapStream(), $criteria, SE_UID)) {
+		if ($results = imap_search($this->getImapStream(), $criteria, SE_UID))
+		{
 			if (isset($limit) && count($results) > $limit)
+			{
 				$results = array_slice($results, 0, $limit);
+			}
 
 			$messages = array();
 
 			foreach ($results as $messageId)
+			{
 				$messages[] = new Message($messageId, $this);
+			}
 
 			return $messages;
-		} else {
+		}
+		else
+		{
 			return array();
 		}
 	}
