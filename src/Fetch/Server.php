@@ -143,21 +143,22 @@ class Server
 		}
 
 		$this->service = $service;
-		$this->mimeHeaderDecodeFunction = imap_utf8;
+		$this->mimeHeaderDecodeFunction = 'imap_utf8';
 		if(function_exists('iconv_mime_decode'))
 		{
-			$this->mimeHeaderDecodeFunction = iconv_mime_decode;
+			$this->mimeHeaderDecodeFunction = 'iconv_mime_decode';
 		}
 		elseif(function_exists('mb_decode_mimeheader'))
 		{
-			$this->mimeHeaderDecodeFunction = mb_decode_mimeheader;
+			$this->mimeHeaderDecodeFunction = 'mb_decode_mimeheader';
 		}
 
 	}
 
 	public function decodeMimeHeader($value)
 	{
-		return $this->mimeHeaderDecodeFunction($value);
+		$_d = $this->mimeHeaderDecodeFunction;
+		return $_d($value);
 	}
 
 	/**
